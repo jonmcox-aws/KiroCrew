@@ -1061,6 +1061,25 @@ every call and keep authoritative state in the gateway.**
 
 ### Why: the shared-backend invariant
 
+Broker stubs receive the gateway's `KIROCREW_HOME` explicitly through their
+session-injected environment. Harnesses may filter inherited environment values;
+the stub must still find the gateway's PID mappings when a cold session publishes
+its identity after MCP initialization. The stub's existing recaller loop supplies
+that late identity to the broker. Backend-declared environment values, credentials
+and session keys are not copied into this environment. Warm-pool claims retain
+their gateway-driven claim notification.
+Shared-runtime subagents additionally receive their own gateway-known session key
+in the injected stub entry. This value is supplied per session, never copied from
+backend configuration or stored in the reusable overlay: the shared parent's PID
+cannot distinguish the child's calls from its own.
+The stub marks that explicit binding in its registration. The broker preserves
+it when a delayed parent PID claim arrives, while keeping the connection indexed
+for runtime aborts. Key-less and legacy registrations retain warm-pool rekeying.
+If a call carries the broker's connection marker but no session identity, the
+strict-identity diagnostic reports an unidentified broker connection and directs
+the operator to data-home and claim delivery checks. A connection marker never
+authorizes the call.
+
 The managed servers are long-lived stdio subprocesses, and **one server process
 serves many sessions.** In the pooled topology a single warm backend is reused
 across sessions, and a sub-agent spawned via `spawn_run` runs inside the parent

@@ -511,6 +511,9 @@ def build_register_payload(args: argparse.Namespace) -> dict:
         "channel_id": channel_id,
         "config_snapshot_hash": _CONFIG_SNAPSHOT_PLACEHOLDER,
         "caller": caller,
+        # A session-injected key identifies this stub for its whole lifetime.
+        # A delayed claim for its shared runtime must not replace that key.
+        "session_bound": bool(os.environ.get("KIROCREW_SESSION_KEY")),
         # Claim-push (gateway → gatewayd ``claim`` frame): the ancestor PID
         # chain of this stub, nearest first. gatewayd indexes the connection
         # under EVERY ancestor so a claim naming any level of the runtime's
